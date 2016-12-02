@@ -1,0 +1,57 @@
+function test_SolveBeam
+
+    L      = 30;        % [m]
+    rho    = 7860;      % [kg/m^3]
+    E      = 205e9;     % [N/m^2]
+    sigmay = 345e6;     % [N/m^2]
+    g      = 9.817;     % [m/s^2]
+    
+    a = 0.240;          % flange thickness
+    b = 0.480;          % flange width
+    c = 0.114;          % web thickness
+    
+    P = @(x) -(0.2 + 8*(x/30).*(1 - x/30).^2) * 1e6;
+    d = @(x) 2.1462*ones(size(x));
+    A = @(x) 2*a*b + c*d(x);
+    W = @(x) rho * g * A(x);
+    I = @(x) (b*(2*a + d(x)).^3 - (b-c)*d(x).^3)/12;
+    R = @(x) E * I(x);
+
+    % Solve the beam
+    [x,Y] = SolveBeam( L, P, R );
+    
+    % Draw the plots.
+    close all;
+    figure(1);
+    
+    subplot(2,3,1);
+    plot(x,d(x));
+    xlabel('x [m]');
+    ylabel('d');
+    
+    subplot(2,3,2);
+    plot(x,Y(:,1));
+    xlabel('x [m]');
+    ylabel('Y(x)');
+    
+    subplot(2,3,3);
+    plot(x,Y(:,2));
+    xlabel('x [m]');
+    ylabel('S(x)');
+    
+    subplot(2,3,4);
+    plot(x,Y(:,3));
+    xlabel('x [m]');
+    ylabel('M(x)');
+    
+    subplot(2,3,5);
+    plot(x,Y(:,4));
+    xlabel('x [m]');
+    ylabel('V(x)');
+
+    subplot(2,3,6);
+    plot(x,P(x));
+    xlabel('x [m]');
+    ylabel('P(x)');    
+end
+

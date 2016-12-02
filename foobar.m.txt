@@ -1,0 +1,14 @@
+function [z] = foobar(zo,a,b,c,d)
+    [z,~,exitflag] = fsolve(@foo,zo, optimset('Display','iter'));
+    if exitflag ~= 1
+        warning('exitflag = %d', exitflag);
+    end
+    
+    function [f] = foo(z)
+        x = z(1);
+        y = z(2);
+        
+        f(1) = sin(x*y) + a*x + b*y;
+        f(2) = exp(x+y) + c*x + d*y;
+    end
+end

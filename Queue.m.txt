@@ -1,0 +1,78 @@
+%------------------------------------------------------------------------------
+% Queue
+%   An simple, inefficient, array-based, self-expanding, implementation 
+%   of a first-in-first-out queue.
+%
+% Public methods:
+%   [qu]     = Queue()
+%   [b]      = isempty( qu )
+%   [qu]     = enqueue( qu, obj )
+%   [qu,obj] = dequeue( qu )
+%-------------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------------
+% Written by:
+%   Dr. Randal J. Barnes
+%   Department of Civil Engineering
+%   University of Minnesota
+%
+% Version:
+%   15 April 2013
+%-------------------------------------------------------------------------------
+classdef Queue
+    
+    properties (SetAccess = protected)
+        count = nan;            % number of objects in the queue
+        capacity = nan;         % maximum number of objects without resizing.
+        data = cell(0,1);       % cell array of objects
+    end
+    
+    methods (Access = public)
+        %-----------------------------------------------------------------------
+        function [qu] = Queue
+            qu.count    = 0;
+            qu.capacity = 0;
+            qu.data     = cell(0,1);
+        end
+
+        %-----------------------------------------------------------------------
+        function [b] = isempty( qu )
+            b = qu.count == 0;
+        end
+        
+        %-----------------------------------------------------------------------        
+        function [qu] = enqueue( qu, obj )
+            if qu.count == qu.capacity
+                qu = expand(qu);
+            end
+            
+            qu.count = qu.count + 1;
+            qu.data{qu.count} = obj;
+        end
+        
+        %-----------------------------------------------------------------------        
+        function [qu, obj] = dequeue( qu )
+            obj = qu.data{1};
+            
+            for i = 2:qu.count
+                qu.data{i-1} = qu.data{i};
+            end
+            qu.count = qu.count - 1;
+        end
+    end
+    
+    methods (Access = private)
+        %-----------------------------------------------------------------------        
+        function [qu] = expand( qu )
+            new_capacity = 2*qu.capacity + 1;
+
+            new_data = cell( new_capacity, 1 );
+            for i = 1:qu.count
+                new_data{i} = qu.data{i};
+            end
+            
+            qu.data = new_data;
+            qu.capacity = new_capacity;
+        end
+    end
+end

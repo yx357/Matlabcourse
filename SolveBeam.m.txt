@@ -1,0 +1,65 @@
+function [x,Y] = SolveBeam( L, P, R )
+%--------------------------------------------------------------------------
+% [x,Y] = SolveBeam( L, P, R )
+%
+%   Solves the beam equation for a non-prismatic beam with a non-uniform
+%   load.  As currently coded, the beam is simply supported on the left
+%   and cantilevered on the right.
+%
+% Arguments:
+%   L   is a scalar equal to the length of the beam [m].
+%
+%   P   is a function handle to the load: P(x) = Load(x).  The P(x)
+%       function must be matrix aware.  If x is a scalar, P(x) returns a
+%       scalar.  If x is a vector, P(x) returns a vector.
+%
+%   R   is a function handle to the structural rigidity: R(x) = E(x)*I(x)
+%       The R(x) function must be matrix aware.  If x is a scalar, R(x) 
+%       returns a scalar.  If x is a vector, P(x) returns a vector.
+%
+% Returns:
+%   x   a (Nx1) vector of solution locations along the beam.
+%
+%   Y   a (Nx4) matrix of [y,s,m,v] at the solution locations, where
+%       y is the deflection, s is the slope, m is the moment, and v is the
+%       shear.
+%
+%--------------------------------------------------------------------------
+
+    % Manifest constants.
+    N = 1001;               % number of reported solution points.
+
+    % Initialize s0 and v0.
+    s0 = -1/180;            % using L/360 as the center deflection.
+    v0 = quad( @(x) x.*P(x), 0,L )/L;
+    
+    % Apply the shooting method to meet the initial and final conditions.
+    xSpan = linspace(0,L,N);
+    options = optimset('Display','off', 'LargeScale','off', 'TolX',1e-12, 'TolFun',1e-12);
+    [r,fval] = fsolve(@solfun, [s0;v0], options);
+
+    % Solve the beam using the fitted initial conditions.
+    [x,Y] = ode45(@odefun, xSpan, [0,r(1),0,r(2)] );    
+    
+    %-------------------------------------------------
+    function q = solfun(r)
+        [x,Y] = ode45(@odefun, xSpan, [0,r(1),0,r(2)] );
+        q = [ Y(end,1); Y(end,2)];
+    end
+    
+    %-------------------------------------------------
+    function dYdx = odefun(x,Y)
+        y = Y(1);       % deflection
+        s = Y(2);       % slope
+        m = Y(3);       % moment
+        v = Y(4);       % shear
+
+        dydx = s;
+        dsdx = m/R(x);
+        dmdx = v;
+        dvdx = P(x);
+        
+        dYdx = [dydx; dsdx; dmdx; dvdx];
+    end
+end
+

@@ -1,0 +1,68 @@
+%------------------------------------------------------------------------------
+% List
+%   A simple, self-expanding, array-based, numeric list.  New rows can be
+%   appended only at the end of the list.  The number of columns in each
+%   row is specified at construction.
+%
+% Public methods:
+%   [ls]     = List( ncol )
+%   [ls]     = append( ls, row )
+%   [mat]    = lst2mat( ls )
+%-------------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------------
+% Written by:
+%   Dr. Randal J. Barnes
+%   Department of Civil Engineering
+%   University of Minnesota
+%
+% Version:
+%   14 April 2013
+%-------------------------------------------------------------------------------
+
+classdef List
+    properties (SetAccess = private)
+        ncol     = nan;     % number of columns in each entry.
+        count    = nan;     % number of values in the list.
+        capacity = nan;     % maximum number of objects without resizing.
+        data     = nan;     % array of values.
+    end
+    
+    methods (Access = public)
+        %-----------------------------------------------------------------------
+        function [ls] = List( ncol )
+            ls.ncol     = ncol;
+            ls.count    = 0;
+            ls.capacity = 0;
+            ls.data     = nan(0,ncol);
+        end
+
+        %-----------------------------------------------------------------------
+        function [ls] = append( ls, row )
+            if ls.count == ls.capacity
+                ls = expand( ls );
+            end
+                
+            ls.count = ls.count + 1;
+            ls.data(ls.count,:) = row(:);
+        end
+
+        %-----------------------------------------------------------------------        
+        function mat = lst2mat( ls )
+            mat = ls.data(1:ls.count,:);
+        end
+    end
+        
+    methods (Access = private)
+        %-----------------------------------------------------------------------
+        function [ls] = expand( ls )
+            new_capacity = 2*ls.capacity + 1;
+
+            new_data = nan(new_capacity, ls.ncol);
+            new_data(1:ls.count,:) = ls.data(1:ls.count,:);
+            
+            ls.data = new_data;
+            ls.capacity = new_capacity;
+        end
+    end
+end

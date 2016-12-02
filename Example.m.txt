@@ -1,0 +1,42 @@
+function T = Example( alpha, lambda1, lambda2 )
+    m = 0;
+    z = linspace(0,1,50);
+    t = linspace(0,5,100);
+
+    sol = pdepe(0, @pdefun, @icfun, @bcfun, z, t);
+    % Extract the first solution component as T.
+    T = sol(:,:,1);
+
+    % A surface plot is often a good way to study a solution.
+    surf(z,t,T)
+    title('Numerical solution.')
+    xlabel('Depth z')
+    ylabel('Time t')
+
+    % A solution profile can also be illuminating.
+    figure
+    plot(z,T(end,:))
+    title('Solution at t = 2')
+    xlabel('Depth z')
+    ylabel('T(z,2)')
+
+    % --------------------------------------------------------------
+    function [c,f,s] = pdefun(x, t, T, dTdx)
+        c = 1;
+        f = alpha * dTdx;
+        s = 0;
+    end
+
+    % --------------------------------------------------------------
+    function T0 = icfun(z)
+        T0 = 0;
+    end
+
+    % --------------------------------------------------------------
+    function [pl,ql,pr,qr] = bcfun(zl, Tl, zr, Tr, t)
+        pl = Tl - 2*sin(2*pi*t/lambda1);
+        ql = 0;
+        pr = Tr - sin(2*pi*t/lambda2);
+        qr = 0;
+    end
+end
